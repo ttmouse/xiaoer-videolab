@@ -423,10 +423,14 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(f"bad request: {e}".encode())
             return
 
+        # Use file:// URI so special chars like # are percent-encoded.
+        # macOS `open` treats paths as URLs, and # would be interpreted
+        # as a fragment identifier, truncating the path.
+        file_uri = Path(filepath).as_uri()
         argv = [cmd]
         if flag:
             argv.append(flag)
-        argv.append(filepath)
+        argv.append(file_uri)
         subprocess.Popen(argv, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         self.send_response(200)
